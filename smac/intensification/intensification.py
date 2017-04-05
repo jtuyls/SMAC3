@@ -94,7 +94,8 @@ class Intensifier(object):
                   incumbent: Configuration,
                   run_history: RunHistory,
                   aggregate_func: typing.Callable,
-                  time_bound: int=MAXINT):
+                  time_bound: int=MAXINT,
+                  min_number_of_runs=2):
         '''
             running intensification to determine the incumbent configuration
             Side effect: adds runs to run_history
@@ -158,11 +159,11 @@ class Intensifier(object):
                 self.logger.debug("Budget exhausted; Return incumbent")
                 return incumbent, inc_perf
 
-            if self._chall_indx > 1 and self._num_run > self.run_limit:
+            if self._chall_indx > (min_number_of_runs - 1) and self._num_run > self.run_limit:
                 self.logger.debug(
                     "Maximum #runs for intensification reached")
                 break
-            elif self._chall_indx > 1 and time.time() - self.start_time - time_bound >= 0:
+            elif self._chall_indx > (min_number_of_runs - 1) and time.time() - self.start_time - time_bound >= 0:
                 self.logger.debug("Timelimit for intensification reached ("
                                   "used: %f sec, available: %f sec)" % (
                                       time.time() - self.start_time, time_bound))
