@@ -44,17 +44,12 @@ class PCAquisitionFunctionWrapper(object):
         print("Compute caching discounts: {}".format(time.time() - start_time))
 
         start_time= time.time()
-        imputed_configs = map(ConfigSpace.util.impute_inactive_values,
-                              sample_configs)
-        imputed_configs = [x.get_array()
-                           for x in imputed_configs]
-        imputed_configs = np.array(imputed_configs,
-                                   dtype=np.float64)
+        configs_array_ = convert_configurations_to_array(sample_configs)
         print("Compute imputed configs: {}".format(time.time() - start_time))
 
         #acq_values = self.acquisition_func(imputed_configs, caching_discounts)
         start_time = time.time()
-        acq_values = self.acquisition_func(imputed_configs)
+        acq_values = self.acquisition_func(configs_array_)
         print("Acquisition function evaluation: {}".format(time.time() - start_time))
         return np.mean(acq_values)
 
@@ -115,7 +110,6 @@ class PCAquisitionFunctionWrapper(object):
                     value_dict[hp_name] = config_dict[hp_name]
         return value_dict
 
-    # TODO the compute caching discounts methods are located in two places: in the select configuration procedure and also in the local search
     def _compute_caching_discounts(self, configs, cached_configs):
         runtime_discounts = []
         for config in configs:
@@ -137,6 +131,7 @@ class PCAquisitionFunctionWrapper(object):
         -------
             The runtime discount for this configuration, given the cached configuration if there is one, otherwise 0
         '''
+        config._populate_values()
         r = [key for key in cached_config[0].keys() if config[key] != cached_config[0][key]]
         # print("_caching_reduction: {}".format(r))
         if r == []:
@@ -176,6 +171,6 @@ class PCAquisitionFunctionWrapperWithCachingReduction(PCAquisitionFunctionWrappe
 
         # acq_values = self.acquisition_func(imputed_configs, caching_discounts)
         start_time = time.time()
-        acq_values = self.acquisition_func(sample_configs, caching_discounts)
+        acq_values = self.acquisition_func(configs_array_, caching_discounts)
         print("Acquisition function evaluation: {}".format(time.time() - start_time))
         return np.mean(acq_values)
