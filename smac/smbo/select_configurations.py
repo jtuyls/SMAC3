@@ -119,7 +119,8 @@ class SelectConfigurations(object):
         # Remove dummy acquisition function value
         next_configs_by_random_search = [x[1] for x in
                                          self._get_next_by_random_search_batch(
-                                             num_points=num_configs_local_search + num_configurations_by_random_search_sorted,
+                                             num_points=len(next_configs_by_acq_value),
+                                             #num_points=num_configs_local_search + num_configurations_by_random_search_sorted,
                                              leaf_size=random_leaf_size)]
 
         # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
@@ -427,14 +428,18 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         next_configs_by_acq_value = [_[1] for _ in next_configs_by_acq_value]
 
         # Remove dummy acquisition function value
+        # TODO Sometimes 2*(num_configs_local_search + num_configurations_by_random_search_sorted) != len(next_configs_by_acq_value)
         next_configs_by_random_search = [x[1] for x in
                                          self._get_next_by_random_search_batch(
-                                             num_points=2*(num_configs_local_search + num_configurations_by_random_search_sorted),
+                                             num_points=len(next_configs_by_acq_value),
+                                             #num_points=2*(num_configs_local_search + num_configurations_by_random_search_sorted),
                                              leaf_size=random_leaf_size)]
 
         # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
         #                                         next_configs_by_random_search)))
         print("LENGTH: {}, {}".format(len(next_configs_by_acq_value), len(next_configs_by_random_search)))
+        print("INVESTIGATE LENGTH: {}, {}".format(len(configs_by_marginalization), len(next_configs_by_random_search_sorted)))
+        print("INVESTIGATE LENGTH: {}, {}".format(num_configs_local_search, num_configurations_by_random_search_sorted))
         iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
         iter_next_configs_by_random_search = iter(next_configs_by_random_search)
         challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
