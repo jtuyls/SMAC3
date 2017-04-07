@@ -546,7 +546,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         if num_points > 1:
             rand_configs = self.config_space.sample_configuration(size=num_points)
         else:
-            rand_configs = [self.config_space.sample_configuration(size=1)]2
+            rand_configs = [self.config_space.sample_configuration(size=1)]
         if _sorted:
             for i in range(len(rand_configs)):
                 rand_configs[i].origin = 'Random Search (Sorted)'
