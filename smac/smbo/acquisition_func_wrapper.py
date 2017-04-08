@@ -14,7 +14,6 @@ class PCAquisitionFunctionWrapper(object):
 
     def __call__(self, configs, *args):
         # TODO !! EI
-        caching_discounts = self._compute_caching_discounts(configs, self.runhistory.get_cached_configurations())
         configs_array_ = convert_configurations_to_array(configs)
         return self.acquisition_func(configs_array_)
 
