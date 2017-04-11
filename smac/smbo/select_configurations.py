@@ -412,7 +412,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         start_time = time.time()
         configs_by_marginalization, marginalization_info = self._compute_configs_by_marginalization(
             num_marginalized_configurations_by_random_search=10,
-            num_configs_for_marginalization=100,
+            num_configs_for_marginalization=20,
             num_configurations_by_random_search_sorted=num_configurations_by_random_search_sorted,
             num_configurations_by_local_search=num_configurations_by_local_search)
         marginalization_runtime = time.time() - start_time
@@ -573,6 +573,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
             'num configs local search': num_configurations_by_local_search,
             'num configs RS sorted': num_configurations_by_random_search_sorted,
             'timing sampling': timing_sampling,
+            'evaluation configs length': len(self.evaluation_configs_for_marginalization),
             'timing_random_search_marginalization': timing_random_search_marginalization,
             'timing_previous_runs_marginalization': timing_previous_runs_marginalization,
             'timing_marginalizaed_random_search_sorted': timing_marginalizaed_random_search_sorted,
