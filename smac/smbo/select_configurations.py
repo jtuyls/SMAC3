@@ -418,23 +418,24 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         marginalization_runtime = time.time() - start_time
         print("Full marginalization time: {}".format(marginalization_runtime))
 
-        # Get configurations sorted by EI
-        next_configs_by_random_search_sorted = \
-            self._get_next_by_random_search(
-                num_configurations_by_random_search_sorted, _sorted=True)
+        # TODO WIP !!
+        # # Get configurations sorted by EI
+        # next_configs_by_random_search_sorted = \
+        #     self._get_next_by_random_search(
+        #         num_configurations_by_random_search_sorted, _sorted=True)
+        #
+        # # initiate local search with best configurations from previous runs
+        # configs_previous_runs = self.runhistory.get_all_configs()
+        # configs_previous_runs_sorted = self._sort_configs_by_acq_value(configs_previous_runs)
+        # num_configs_local_search = min(len(configs_previous_runs_sorted), num_configurations_by_local_search)
+        # next_configs_by_local_search = \
+        #     self._get_next_by_local_search(
+        #         list(map(lambda x: x[1],
+        #                  configs_previous_runs_sorted[:num_configs_local_search])))
 
-        # initiate local search with best configurations from previous runs
-        configs_previous_runs = self.runhistory.get_all_configs()
-        configs_previous_runs_sorted = self._sort_configs_by_acq_value(configs_previous_runs)
-        num_configs_local_search = min(len(configs_previous_runs_sorted), num_configurations_by_local_search)
-        next_configs_by_local_search = \
-            self._get_next_by_local_search(
-                list(map(lambda x: x[1],
-                         configs_previous_runs_sorted[:num_configs_local_search])))
-
-        next_configs_by_acq_value = configs_by_marginalization + \
-                                    next_configs_by_random_search_sorted + \
-                                    next_configs_by_local_search
+        next_configs_by_acq_value = configs_by_marginalization #+ \
+                                    #next_configs_by_random_search_sorted + \
+                                    #next_configs_by_local_search
         next_configs_by_acq_value.sort(reverse=True, key=lambda x: x[0])
         self.logger.debug(
             "First 10 acq func (origin) values of selected configurations: %s" %
@@ -454,8 +455,8 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
         #                                         next_configs_by_random_search)))
         print("LENGTH: {}, {}".format(len(next_configs_by_acq_value), len(next_configs_by_random_search)))
-        print("INVESTIGATE LENGTH: {}, {}".format(len(configs_by_marginalization), len(next_configs_by_random_search_sorted)))
-        print("INVESTIGATE LENGTH: {}, {}".format(num_configs_local_search, num_configurations_by_random_search_sorted))
+        #print("INVESTIGATE LENGTH: {}, {}".format(len(configs_by_marginalization), len(next_configs_by_random_search_sorted)))
+        #print("INVESTIGATE LENGTH: {}, {}".format(num_configs_local_search, num_configurations_by_random_search_sorted))
         iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
         iter_next_configs_by_random_search = iter(next_configs_by_random_search)
         challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
