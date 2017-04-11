@@ -419,23 +419,23 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         print("Full marginalization time: {}".format(marginalization_runtime))
 
         # TODO WIP !!
-        # # Get configurations sorted by EI
-        # next_configs_by_random_search_sorted = \
-        #     self._get_next_by_random_search(
-        #         num_configurations_by_random_search_sorted, _sorted=True)
-        #
-        # # initiate local search with best configurations from previous runs
-        # configs_previous_runs = self.runhistory.get_all_configs()
-        # configs_previous_runs_sorted = self._sort_configs_by_acq_value(configs_previous_runs)
-        # num_configs_local_search = min(len(configs_previous_runs_sorted), num_configurations_by_local_search)
-        # next_configs_by_local_search = \
-        #     self._get_next_by_local_search(
-        #         list(map(lambda x: x[1],
-        #                  configs_previous_runs_sorted[:num_configs_local_search])))
+        # Get configurations sorted by EI
+        next_configs_by_random_search_sorted = \
+            self._get_next_by_random_search(
+                num_configurations_by_random_search_sorted, _sorted=True)
 
-        next_configs_by_acq_value = configs_by_marginalization #+ \
-                                    #next_configs_by_random_search_sorted + \
-                                    #next_configs_by_local_search
+        # initiate local search with best configurations from previous runs
+        configs_previous_runs = self.runhistory.get_all_configs()
+        configs_previous_runs_sorted = self._sort_configs_by_acq_value(configs_previous_runs)
+        num_configs_local_search = min(len(configs_previous_runs_sorted), num_configurations_by_local_search)
+        next_configs_by_local_search = \
+            self._get_next_by_local_search(
+                list(map(lambda x: x[1],
+                         configs_previous_runs_sorted[:num_configs_local_search])))
+
+        next_configs_by_acq_value = configs_by_marginalization + \
+                                    next_configs_by_random_search_sorted + \
+                                    next_configs_by_local_search
         next_configs_by_acq_value.sort(reverse=True, key=lambda x: x[0])
         self.logger.debug(
             "First 10 acq func (origin) values of selected configurations: %s" %
