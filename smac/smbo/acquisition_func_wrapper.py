@@ -33,14 +33,10 @@ class PCAquisitionFunctionWrapper(object):
     #### HELPER FUNCTIONS ####
     def get_marginalized_acquisition_value(self, config, evaluation_configs_values=None, num_points=100):
         start_time = time.time()
+        print(len(evaluation_configs_values))
         sample_configs = self._combine_configurations_batch(config, evaluation_configs_values) if evaluation_configs_values \
             else [self._get_variant_config(start_config=config) for i in range(0, num_points)]
         print("List construction: {}".format(time.time() - start_time))
-
-        start_time = time.time()
-        caching_discounts = self._compute_caching_discounts(sample_configs,
-                                                            self.runhistory.get_cached_configurations())
-        print("Compute caching discounts: {}".format(time.time() - start_time))
 
         start_time= time.time()
         configs_array_ = convert_configurations_to_array(sample_configs)
@@ -109,34 +105,6 @@ class PCAquisitionFunctionWrapper(object):
                     value_dict[hp_name] = config_dict[hp_name]
         return value_dict
 
-    def _compute_caching_discounts(self, configs, cached_configs):
-        runtime_discounts = []
-        for config in configs:
-            discount = 0
-            for cached_config in cached_configs:
-                discount += self._caching_reduction(config, cached_config)
-            runtime_discounts.append(discount)
-        return runtime_discounts
-
-    def _caching_reduction(self, config, cached_config):
-        '''
-
-        Parameters
-        ----------
-        config:         the new configuration
-        cached_config:  the cached configuration
-
-        Returns
-        -------
-            The runtime discount for this configuration, given the cached configuration if there is one, otherwise 0
-        '''
-        config._populate_values()
-        r = [key for key in cached_config[0].keys() if config[key] != cached_config[0][key]]
-        # print("_caching_reduction: {}".format(r))
-        if r == []:
-            return cached_config[1]
-        return 0
-
 class PCAquisitionFunctionWrapperWithCachingReduction(PCAquisitionFunctionWrapper):
 
     def __init__(self, acquisition_func, config_space, runhistory, constant_pipeline_steps, variable_pipeline_steps):
@@ -173,3 +141,31 @@ class PCAquisitionFunctionWrapperWithCachingReduction(PCAquisitionFunctionWrappe
         acq_values = self.acquisition_func(configs_array_, caching_discounts)
         print("Acquisition function evaluation: {}".format(time.time() - start_time))
         return np.mean(acq_values)
+
+    def _compute_caching_discounts(self, configs, cached_configs):
+        runtime_discounts = []
+        for config in configs:
+            discount = 0
+            for cached_config in cached_configs:
+                discount += self._caching_reduction(config, cached_config)
+            runtime_discounts.append(discount)
+        return runtime_discounts
+
+    def _caching_reduction(self, config, cached_config):
+        '''
+
+        Parameters
+        ----------
+        config:         the new configuration
+        cached_config:  the cached configuration
+
+        Returns
+        -------
+            The runtime discount for this configuration, given the cached configuration if there is one, otherwise 0
+        '''
+        config._populate_values()
+        r = [key for key in cached_config[0].keys() if config[key] != cached_config[0][key]]
+        # print("_caching_reduction: {}".format(r))
+        if r == []:
+            return cached_config[1]
+        return 0
