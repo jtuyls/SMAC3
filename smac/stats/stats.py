@@ -19,18 +19,15 @@ class Stats(object):
 
     def __init__(self, scenario, output_dir=None, stamp=""):
 
-        self.output_dir = output_dir
+        self.output_dir = output_dir if output_dir != None else os.path.join(os.getcwd(), "statistics_select_configurations")
 
-        if self.output_dir != None and not os.path.exists(self.output_dir):
+        if not os.path.exists(self.output_dir):
             try:
                 os.makedirs(self.output_dir)
             except FileExistsError:
                 pass
-        if self.output_dir != None and self.output_dir[-1] == "/":
-            self.select_configurations_file = self.output_dir + "statistics_intensify_" + str(stamp) + ".json"
-        else:
-            self.select_configurations_file = self.output_dir + "/statistics_intensify_" + str(stamp) + ".json"
 
+        self.select_configurations_file = os.path.join(self.output_dir, "statistics_intensify_" + str(stamp) + ".json")
         self._clean_files([self.select_configurations_file])
 
         self.__scenario = scenario
@@ -155,7 +152,10 @@ class Stats(object):
     #### OWN STATS FUNCTIONS ####
 
     def add_select_configurations_run(self, run_info):
-        self._save_json([run_info], self.select_configurations_file)
+        if self.output_dir != None:
+            self._save_json([run_info], self.select_configurations_file)
+        else:
+            raise ValueError("No output directory specified")
 
     def _save_json(self, lst, destination_file):
         if not os.path.exists(destination_file):
