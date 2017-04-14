@@ -148,6 +148,8 @@ class PCAquisitionFunctionWrapperWithCachingReduction(PCAquisitionFunctionWrappe
             discount = 0
             for cached_config in cached_configs:
                 discount += self._caching_reduction(config, cached_config)
+                if discount > 0:
+                    break
             runtime_discounts.append(discount)
         return runtime_discounts
 
