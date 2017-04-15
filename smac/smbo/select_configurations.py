@@ -497,7 +497,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         # TODO
         evaluation_configs = self.config_space.sample_configuration(size=num_configs_for_marginalization)
         self.evaluation_configs_for_marginalization.extend(evaluation_configs)
-        if len(self.evaluation_configs_for_marginalization) > (5 * num_configs_for_marginalization):
+        if len(self.evaluation_configs_for_marginalization) > (20 * num_configs_for_marginalization):
             self.evaluation_configs_for_marginalization = self.evaluation_configs_for_marginalization[num_configs_for_marginalization:]
         print("EVALUATION CONFIGS LENGTH: {}".format(len(self.evaluation_configs_for_marginalization)))
         timing_sampling = time.time() - start_time
