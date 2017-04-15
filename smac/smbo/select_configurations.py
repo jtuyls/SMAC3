@@ -348,7 +348,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
                  constant_pipeline_steps,
                  variable_pipeline_steps,
                  num_marginalized_configurations_by_random_search: int = 10,
-                 num_configs_for_marginalization: int = 5):
+                 num_configs_for_marginalization: int = 20):
         super(SelectConfigurationsWithMarginalization, self).__init__(scenario=scenario,
                                                                      stats=stats,
                                                                      runhistory=runhistory,
@@ -481,7 +481,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
 
     def _compute_configs_by_marginalization(self,
                                             num_marginalized_configurations_by_random_search=10,
-                                            num_configs_for_marginalization=5,
+                                            num_configs_for_marginalization=20,
                                             num_configurations_by_local_search=10,
                                             num_configurations_by_random_search_sorted=100):
 
@@ -497,7 +497,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         # TODO
         evaluation_configs = self.config_space.sample_configuration(size=num_configs_for_marginalization)
         self.evaluation_configs_for_marginalization.extend(evaluation_configs)
-        if len(self.evaluation_configs_for_marginalization) > (20 * num_configs_for_marginalization):
+        if len(self.evaluation_configs_for_marginalization) > (5 * num_configs_for_marginalization):
             self.evaluation_configs_for_marginalization = self.evaluation_configs_for_marginalization[num_configs_for_marginalization:]
         print("EVALUATION CONFIGS LENGTH: {}".format(len(self.evaluation_configs_for_marginalization)))
         timing_sampling = time.time() - start_time
