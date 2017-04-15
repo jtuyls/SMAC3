@@ -362,6 +362,8 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
             incumbent,
             num_configurations_by_random_search_sorted: int = 1000,
             num_configurations_by_local_search: int = None,
+            num_marginalized_configurations_by_random_search: int = 10,
+            num_configs_for_marginalization: int = 20,
             random_leaf_size=1):
         print("Run select configuration: rss: {}, ls: {}".format(num_configurations_by_random_search_sorted,
                                                                  num_configurations_by_local_search))
