@@ -512,7 +512,9 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         start_time = time.time()
         # TODO Might be to costly to sort all configs from previous runs
         configs_previous_runs = self.runhistory.get_all_configs()
+        print("START sort configs of previous runs")
         configs_previous_runs_sorted = self._sort_configs_by_acq_value(configs_previous_runs)
+        print("END sort configs of previous runs")
         num_configs_previous_runs_marginalized = min(len(configs_previous_runs_sorted),
                                                      num_configurations_by_local_search)
         configs_previous_runs_sorted_marginalized = \

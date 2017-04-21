@@ -146,28 +146,42 @@ class PCAquisitionFunctionWrapperWithCachingReduction(PCAquisitionFunctionWrappe
         runtime_discounts = []
         for config in configs:
             discount = 0
-            for cached_config in cached_configs:
-                discount += self._caching_reduction(config, cached_config)
-                if discount > 0:
-                    break
+            constant_values = self._get_values(config.get_dictionary(), self.constant_pipeline_steps)
+            hash_value = hash(frozenset(constant_values.items()))
+            if hash_value in cached_configs:
+                discount = cached_configs[hash_value]
+                print("CACHING REDUCTION: {}, {}".format(hash_value, discount))
+                print("Config origin: {}".format(config.origin))
+                #print("Config: {}".format(config))
             runtime_discounts.append(discount)
         return runtime_discounts
 
-    def _caching_reduction(self, config, cached_config):
-        '''
-
-        Parameters
-        ----------
-        config:         the new configuration
-        cached_config:  the cached configuration
-
-        Returns
-        -------
-            The runtime discount for this configuration, given the cached configuration if there is one, otherwise 0
-        '''
-        config._populate_values()
-        r = [key for key in cached_config[0].keys() if config[key] != cached_config[0][key]]
-        # print("_caching_reduction: {}".format(r))
-        if r == []:
-            return cached_config[1]
-        return 0
+    # def _compute_caching_discounts(self, configs, cached_configs):
+    #     runtime_discounts = []
+    #     for config in configs:
+    #         discount = 0
+    #         for cached_config in cached_configs:
+    #             discount += self._caching_reduction(config, cached_config)
+    #             if discount > 0:
+    #                 break
+    #         runtime_discounts.append(discount)
+    #     return runtime_discounts
+    #
+    # def _caching_reduction(self, config, cached_config):
+    #     '''
+    #
+    #     Parameters
+    #     ----------
+    #     config:         the new configuration
+    #     cached_config:  the cached configuration
+    #
+    #     Returns
+    #     -------
+    #         The runtime discount for this configuration, given the cached configuration if there is one, otherwise 0
+    #     '''
+    #     config._populate_values()
+    #     r = [key for key in cached_config[0].keys() if config[key] != cached_config[0][key]]
+    #     # print("_caching_reduction: {}".format(r))
+    #     if r == []:
+    #         return cached_config[1]
+    #     return 0
