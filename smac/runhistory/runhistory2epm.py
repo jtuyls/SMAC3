@@ -394,7 +394,7 @@ class RunHistory2EPM4LogCost(RunHistory2EPM4Cost):
 
 
 class RunHistory2EPM4EIPS(AbstractRunHistory2EPM):
-
+    
     def _build_matrix(self, run_dict, runhistory, instances=None, par_factor=1):
         # First build nan-matrix of size #configs x #params+1
         n_rows = len(run_dict)
