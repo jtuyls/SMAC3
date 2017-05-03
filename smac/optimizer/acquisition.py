@@ -254,6 +254,29 @@ class PCEIPS(EIPS):
 
         super(PCEIPS, self).__init__(model)
 
+    def __call__(self, X: np.ndarray, runtime_discount=None):
+        """
+        Computes the acquisition value for a given point X
+
+        Parameters
+        ----------
+        X : np.ndarray
+            The input points where the acquisition function
+            should be evaluated. The dimensionality of X is (N, D), with N as
+            the number of points to evaluate at and D is the number of
+            dimensions of one X.
+
+        """
+
+        if len(X.shape) == 1:
+            X = X[np.newaxis, :]
+
+        acq = self._compute(X, runtime_discount=runtime_discount)
+        if np.any(np.isnan(acq)):
+            idx = np.where(np.isnan(acq))[0]
+            acq[idx, :] = -np.finfo(np.float).max
+        return acq
+
     def _compute(self, X, runtime_discount=None, **kwargs):
         """
         Computes the EIPS value.
