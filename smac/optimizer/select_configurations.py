@@ -47,7 +47,7 @@ class SelectConfigurations(object):
             incumbent,
             num_configurations_by_random_search_sorted: int = 1000,
             num_configurations_by_local_search: int = None,
-            random_leaf_size=1):
+            mrs=False):
         """Choose next candidate solution with Bayesian optimization.
 
         Parameters
@@ -117,25 +117,27 @@ class SelectConfigurations(object):
         next_configs_by_acq_value = [_[1] for _ in next_configs_by_acq_value]
 
         # Remove dummy acquisition function value
+
+        batch_size = len(next_configs_by_acq_value) if mrs else 1
         next_configs_by_random_search = [x[1] for x in
                                          self._get_next_by_random_search_batch(
                                              num_points=len(next_configs_by_acq_value),
                                              #num_points=num_configs_local_search + num_configurations_by_random_search_sorted,
-                                             leaf_size=random_leaf_size)]
+                                             batch_size=batch_size)]
 
-        # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
-        #                                         next_configs_by_random_search)))
-        iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
-        iter_next_configs_by_random_search = iter(next_configs_by_random_search)
-        challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
-            iter_next_configs_by_random_search)
-                       for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
+        challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
+                                                next_configs_by_random_search)))
+        # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
+        # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
+        # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
+        #     iter_next_configs_by_random_search)
+        #                for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
 
         info = {
             'walltime': time.time() - start_time,
             'num_configs_random_search_sorted': num_configurations_by_random_search_sorted,
             'num_configs_local_search': num_configurations_by_local_search,
-            'random leaf size': random_leaf_size,
+            'mrs': mrs,
             'marginalization info': {},
             '10 best configs': best_cofigs_by_acq_value
         }
@@ -173,7 +175,7 @@ class SelectConfigurations(object):
             return [(0, rand_configs[i]) for i in range(len(rand_configs))]
 
     #### BATCH RANDOM SEARCH ####
-    def _get_next_by_random_search_batch(self, num_points=1000, leaf_size=4, _sorted=False):
+    def _get_next_by_random_search_batch(self, num_points=1000, batch_size=4, _sorted=False):
         """Get candidate solutions via local search.
 
         Parameters
@@ -190,11 +192,13 @@ class SelectConfigurations(object):
         list : (acquisition value, Candidate solutions)
         """
         rand_configs = []
-        for i in range(0, num_points):
+        if num_points % batch_size != 0:
+            raise ValueError("Number of points for random search batch is not divisible by batch size!!")
+        for i in range(0, int(num_points/batch_size)):
             start_config = self.config_space.sample_configuration(size=1)
             batch_of_configs = [start_config]
             i = 1
-            while i < leaf_size:
+            while i < batch_size:
                 try:
                     next_config_combined = self._get_variant_config(start_config=start_config)
                     batch_of_configs.append(next_config_combined)
@@ -410,7 +414,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
             incumbent,
             num_configurations_by_random_search_sorted: int = 1000,
             num_configurations_by_local_search: int = None,
-            random_leaf_size=1):
+            mrs=False):
         print("Run select configuration: rss: {}, ls: {}".format(num_configurations_by_random_search_sorted,
                                                                  num_configurations_by_local_search))
         """Choose next candidate solution with Bayesian optimization.
@@ -494,28 +498,28 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
 
         # Remove dummy acquisition function value
         # TODO Sometimes 2*(num_configs_local_search + num_configurations_by_random_search_sorted) != len(next_configs_by_acq_value)
+        batch_size = len(next_configs_by_acq_value) if mrs else 1
         next_configs_by_random_search = [x[1] for x in
                                          self._get_next_by_random_search_batch(
                                              num_points=len(next_configs_by_acq_value),
                                              #num_points=2*(num_configs_local_search + num_configurations_by_random_search_sorted),
-                                             leaf_size=random_leaf_size)]
+                                             batch_size=batch_size)]
 
-        # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
-        #                                         next_configs_by_random_search)))
+
         print("LENGTH: {}, {}".format(len(next_configs_by_acq_value), len(next_configs_by_random_search)))
-        #print("INVESTIGATE LENGTH: {}, {}".format(len(configs_by_marginalization), len(next_configs_by_random_search_sorted)))
-        #print("INVESTIGATE LENGTH: {}, {}".format(num_configs_local_search, num_configurations_by_random_search_sorted))
-        iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
-        iter_next_configs_by_random_search = iter(next_configs_by_random_search)
-        challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
-            iter_next_configs_by_random_search)
-                       for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
+        challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
+                                                next_configs_by_random_search)))
+        # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
+        # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
+        # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
+        #     iter_next_configs_by_random_search)
+        #                for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
 
         info = {
             'walltime': time.time() - start_time,
             'num_configs_random_search_sorted': num_configurations_by_random_search_sorted,
             'num_configs_local_search': num_configurations_by_local_search,
-            'random leaf size': random_leaf_size,
+            'mrs': mrs,
             'marginalization info': marginalization_info,
             '10 best configs': best_configs_by_acq_value
         }
