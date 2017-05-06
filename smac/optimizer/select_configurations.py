@@ -215,34 +215,78 @@ class SelectConfigurations(object):
         next_config = start_config
         i = 0
         while i < 1000:
-            try:
-                next_config = self._combine_configurations(start_config, self.config_space.sample_configuration())
+            sample_config = self.config_space.sample_configuration()
+            complemented_config_values = [self._get_vector_values(sample_config, self.variable_pipeline_steps)]
+            next_config_lst = self._combine_configurations_batch_vector(start_config, complemented_config_values)
+
+            if next_config_lst != []:
+                next_config = next_config_lst[0]
                 next_config.origin = origin
                 break
-            except ValueError as v:
+            else:
                 i += 1
+
         # TODO hack for now to combine preprocessing part of one configuration with classification part of all the others
         return next_config
 
-    def _combine_configurations(self, start_config, new_config):
-        constant_values = self._get_values(start_config.get_dictionary(), self.constant_pipeline_steps)
-        new_config_values = {}
-        new_config_values.update(constant_values)
+    def _combine_configurations_batch_vector(self, start_config, complemented_configs_values):
+        constant_vector_values = self._get_vector_values(start_config, self.constant_pipeline_steps)
+        batch = []
 
-        variable_values = self._get_values(new_config.get_dictionary(), self.variable_pipeline_steps)
-        new_config_values.update(variable_values)
+        for complemented_config_values in complemented_configs_values:
+            vector = np.ndarray(len(self.config_space._hyperparameters),
+                                dtype=np.float)
 
-        return Configuration(configuration_space=self.config_space,
-                             values=new_config_values)
+            vector[:] = np.NaN
 
-    def _get_values(self, config_dict, pipeline_steps):
+            for key in constant_vector_values:
+                vector[key] = constant_vector_values[key]
+
+            for key in complemented_config_values:
+                vector[key] = complemented_config_values[key]
+
+            try:
+                # start_time = time.time()
+                self.config_space._check_forbidden(vector)
+                config_object = Configuration(configuration_space=self.config_space,
+                                              vector=vector)
+                # print("Constructing configuration: {}".format(time.time() - start_time))
+                batch.append(config_object)
+            except ValueError as v:
+                pass
+
+        return batch
+
+    def _get_vector_values(self, config, pipeline_steps):
+        vector = config.get_array()
         value_dict = {}
-        for step_name in pipeline_steps:
-            for hp_name in config_dict:
+        for hp_name in config.get_dictionary():
+            for step_name in pipeline_steps:
                 splt_hp_name = hp_name.split(":")
                 if splt_hp_name[0] == step_name:
-                    value_dict[hp_name] = config_dict[hp_name]
+                    item_idx = self.config_space._hyperparameter_idx[hp_name]
+                    value_dict[item_idx] = vector[item_idx]
         return value_dict
+
+    # def _combine_configurations(self, start_config, new_config):
+    #     constant_values = self._get_values(start_config.get_dictionary(), self.constant_pipeline_steps)
+    #     new_config_values = {}
+    #     new_config_values.update(constant_values)
+    #
+    #     variable_values = self._get_values(new_config.get_dictionary(), self.variable_pipeline_steps)
+    #     new_config_values.update(variable_values)
+    #
+    #     return Configuration(configuration_space=self.config_space,
+    #                          values=new_config_values)
+    #
+    # def _get_values(self, config_dict, pipeline_steps):
+    #     value_dict = {}
+    #     for step_name in pipeline_steps:
+    #         for hp_name in config_dict:
+    #             splt_hp_name = hp_name.split(":")
+    #             if splt_hp_name[0] == step_name:
+    #                 value_dict[hp_name] = config_dict[hp_name]
+    #     return value_dict
 
     #### LOCAL SEARCH ####
     def _get_next_by_local_search(self, init_points=typing.List[Configuration]):
@@ -541,28 +585,30 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         timing_marginalizaed_random_search_sorted = time.time() - start_time
         print("Marginalized random search sorted: {}".format(timing_marginalizaed_random_search_sorted))
 
-        start_time = time.time()
+
         # initiate local search for marginalized preprocessor with best configurations from previous runs
+        start_time = time.time()
         configs_previous_runs = self.runhistory.get_all_configs()
-        # print("configs_previous_runs: {}".format(configs_previous_runs))
+        # sort configs of previous runs by acquisition value
+        configs_previous_runs_sorted = self._sort_configs_by_acq_value(configs_previous_runs)
+        num_configs_local_search = min(len(configs_previous_runs_sorted), num_configurations_by_local_search)
+
         combined_configs_previous_runs = []
-        for config in configs_previous_runs:
-            try:
-                combined_config = self._combine_configurations(start_config=best_preprocessor_configuration,
-                                                               new_config=config)
+        print("length: {}".format(len(configs_previous_runs_sorted[:num_configs_local_search])))
+        for config in list(map(lambda x: x[1], configs_previous_runs_sorted[:num_configs_local_search])):
+            complemented_configs_values = [self._get_vector_values(config, self.variable_pipeline_steps)]
+            combined_config_lst = self._combine_configurations_batch_vector(start_config=best_preprocessor_configuration,
+                                                                        complemented_configs_values=complemented_configs_values)
+            if combined_config_lst != []:
+                combined_config = combined_config_lst[0]
                 combined_configs_previous_runs.append(combined_config)
-            except ValueError as v:
-                pass
+
         if combined_configs_previous_runs != []:
-            combined_configs_previous_runs_sorted = self._sort_configs_by_acq_value(combined_configs_previous_runs)
+            #combined_configs_previous_runs_sorted = self._sort_configs_by_acq_value(combined_configs_previous_runs)
             # print("combined configs_previous_runs_sorted: {}".format(combined_configs_previous_runs_sorted))
 
-            num_configs_local_search = min(len(combined_configs_previous_runs_sorted),
-                                           num_configurations_by_local_search)
             next_marginalized_configs_by_local_search = \
-                self._get_next_by_local_search(
-                    list(map(lambda x: x[1],
-                             combined_configs_previous_runs_sorted[:num_configs_local_search])))
+                self._get_next_by_local_search(list(combined_configs_previous_runs))
             for _, config in next_marginalized_configs_by_local_search:
                 config.origin = "Local Search marginalized"
             timing_local_search = time.time() - start_time
@@ -624,7 +670,6 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
 
     def _sort_configs_by_acq_value_marginalization(self, configs, evaluation_configs_for_marginalization):
         start_time = time.time()
-        #evaluation_configs = self.config_space.sample_configuration(size=100)
         acq_values = self.acquisition_func.marginalized_prediction(configs=configs, evaluation_configs=evaluation_configs_for_marginalization)
         print("Compute marginalization: {}".format(time.time() - start_time))
 
