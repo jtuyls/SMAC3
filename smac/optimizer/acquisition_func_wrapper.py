@@ -52,41 +52,18 @@ class PCAquisitionFunctionWrapper(object):
         next_config = start_config
         i = 0
         while i < 1000:
-            try:
-                start_time = time.time()
-                sample_config = self.config_space.sample_configuration()
-                #print("Sample config: {}".format(time.time() - start_time))
-                start_time = time.time()
-                next_config = self._combine_configurations_batch_vector(start_config, [sample_config.get_dictionary()])[0]
-                #print("Combine config: {}, {}".format(time.time() - start_time, i))
-                next_config.origin=origin
+            sample_config = self.config_space.sample_configuration()
+            complemented_config_values = [self._get_vector_values(sample_config, self.variable_pipeline_steps)]
+            next_config_lst = self._combine_configurations_batch_vector(start_config, complemented_config_values)
+
+            if next_config_lst != []:
+                next_config = next_config_lst[0]
+                next_config.origin = origin
                 break
-            except ValueError as v:
+            else:
                 i += 1
         # TODO hack for now to combine preprocessing part of one configuration with classification part of all the others
         return next_config
-
-    # def _combine_configurations(self, start_config, complemented_config):
-    #     constant_vector_values = self._get_vector__values(start_config, self.constant_pipeline_steps)
-    #     variable_vector_values = self._get_vector_values(complemented_config, self.variable_pipeline_steps)
-    #
-    #     vector = np.ndarray(len(self.config_space._hyperparameters),
-    #                         dtype=np.float)
-    #
-    #     vector[:] = np.NaN
-    #
-    #     # Populate the vector
-    #     # TODO very unintuitive calls...
-    #     for key in constant_vector_values:
-    #         vector[key] = constant_vector_values[key]
-    #     for key in variable_vector_values:
-    #         vector[key] = variable_vector_values[key]
-    #
-    #
-    #     config = Configuration(configuration_space=self.config_space,
-    #                          vector=vector)
-    #     config.is_valid_configuration()
-    #     return config
 
     def _combine_configurations_batch_vector(self, start_config, complemented_configs_values):
         constant_vector_values = self._get_vector_values(start_config, self.constant_pipeline_steps)
@@ -106,9 +83,10 @@ class PCAquisitionFunctionWrapper(object):
 
             try:
                 # start_time = time.time()
+                self.config_space._check_forbidden(vector)
                 config_object = Configuration(configuration_space=self.config_space,
                                               vector=vector)
-                config_object.is_valid_configuration()
+                #config_object.is_valid_configuration()
                 # print("Constructing configuration: {}".format(time.time() - start_time))
                 batch.append(config_object)
             except ValueError as v:
