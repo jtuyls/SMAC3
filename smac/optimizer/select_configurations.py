@@ -661,7 +661,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
             rand_configs = [self.config_space.sample_configuration(size=1)]
         if _sorted:
             for i in range(len(rand_configs)):
-                rand_configs[i].origin = 'Random Search (Sorted)'
+                rand_configs[i].origin = 'Random Search (sorted)'
             if marginalization:
                 if evaluation_configs_for_marginalization == None:
                     raise ValueError("Evaluation configs for marginalization should not be None when marginalization is true")
