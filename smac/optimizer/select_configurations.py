@@ -125,8 +125,8 @@ class SelectConfigurations(object):
                                              #num_points=num_configs_local_search + num_configurations_by_random_search_sorted,
                                              batch_size=batch_size)]
 
-        # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
-        #                                         next_configs_by_random_search)))
+        challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
+                                                next_configs_by_random_search)))
         # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
         # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
         # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
@@ -144,7 +144,7 @@ class SelectConfigurations(object):
         self.stats.add_select_configurations_run(run_info=info)
         #return challengers
 
-        return next_configs_by_acq_value, next_configs_by_random_search
+        return challengers
 
     def _get_next_by_random_search(self, num_points=1000, _sorted=False):
         """Get candidate solutions via local search.
@@ -489,8 +489,8 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
 
 
         print("LENGTH: {}, {}".format(len(next_configs_by_acq_value), len(next_configs_by_random_search)))
-        #challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
-        #                                        next_configs_by_random_search)))
+        challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
+                                               next_configs_by_random_search)))
         # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
         # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
         # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
@@ -507,8 +507,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         }
         self.stats.add_select_configurations_run(run_info=info)
 
-        #return challengers
-        return next_configs_by_acq_value, next_configs_by_random_search
+        return challengers
 
     def _compute_configs_by_marginalization(self,
                                             num_marginalized_configurations_by_random_search=10,
