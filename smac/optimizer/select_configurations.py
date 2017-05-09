@@ -125,8 +125,8 @@ class SelectConfigurations(object):
                                              #num_points=num_configs_local_search + num_configurations_by_random_search_sorted,
                                              batch_size=batch_size)]
 
-        challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
-                                                next_configs_by_random_search)))
+        # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
+        #                                         next_configs_by_random_search)))
         # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
         # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
         # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
@@ -142,7 +142,9 @@ class SelectConfigurations(object):
             '10 best configs': best_cofigs_by_acq_value
         }
         self.stats.add_select_configurations_run(run_info=info)
-        return challengers
+        #return challengers
+
+        return next_configs_by_acq_value, next_configs_by_random_search
 
     def _get_next_by_random_search(self, num_points=1000, _sorted=False):
         """Get candidate solutions via local search.
@@ -271,26 +273,6 @@ class SelectConfigurations(object):
                     item_idx = self.config_space._hyperparameter_idx[hp_name]
                     value_dict[item_idx] = vector[item_idx]
         return value_dict
-
-    # def _combine_configurations(self, start_config, new_config):
-    #     constant_values = self._get_values(start_config.get_dictionary(), self.constant_pipeline_steps)
-    #     new_config_values = {}
-    #     new_config_values.update(constant_values)
-    #
-    #     variable_values = self._get_values(new_config.get_dictionary(), self.variable_pipeline_steps)
-    #     new_config_values.update(variable_values)
-    #
-    #     return Configuration(configuration_space=self.config_space,
-    #                          values=new_config_values)
-    #
-    # def _get_values(self, config_dict, pipeline_steps):
-    #     value_dict = {}
-    #     for step_name in pipeline_steps:
-    #         for hp_name in config_dict:
-    #             splt_hp_name = hp_name.split(":")
-    #             if splt_hp_name[0] == step_name:
-    #                 value_dict[hp_name] = config_dict[hp_name]
-    #     return value_dict
 
     #### LOCAL SEARCH ####
     def _get_next_by_local_search(self, init_points=typing.List[Configuration]):
@@ -507,8 +489,8 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
 
 
         print("LENGTH: {}, {}".format(len(next_configs_by_acq_value), len(next_configs_by_random_search)))
-        challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
-                                                next_configs_by_random_search)))
+        #challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
+        #                                        next_configs_by_random_search)))
         # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
         # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
         # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
@@ -525,7 +507,8 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         }
         self.stats.add_select_configurations_run(run_info=info)
 
-        return challengers
+        #return challengers
+        return next_configs_by_acq_value, next_configs_by_random_search
 
     def _compute_configs_by_marginalization(self,
                                             num_marginalized_configurations_by_random_search=10,
