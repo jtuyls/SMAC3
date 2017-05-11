@@ -312,8 +312,8 @@ class PCEIPS(EIPS):
         if runtime_discount:
             for i in range(0, len(m_runtime)):
                 # runhistory2epm4eips returns 'np.log(1 + run.time)'as runtime cost
-                if np.exp(m_runtime[i]) - runtime_discount[i] < 1:
-                    print(np.exp(m_runtime[i]), runtime_discount[i])
+                #if np.exp(m_runtime[i]) - runtime_discount[i] < 1:
+                #    print(np.exp(m_runtime[i]), runtime_discount[i])
                 m_runtime[i] = \
                     np.log(np.exp(m_runtime[i]) - runtime_discount[i]) if np.exp(m_runtime[i]) - runtime_discount[
                         i] > 1 else m_runtime[i]
