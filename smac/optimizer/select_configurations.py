@@ -476,7 +476,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
             (str([[_[0], _[1].origin] for _ in next_configs_by_acq_value[:10]])))
         best_configs_by_acq_value = str([[_[0], _[1].origin] for _ in next_configs_by_acq_value[:10]])
         next_configs_by_acq_value = [_[1] for _ in next_configs_by_acq_value]
-        print("Configs origins: {}".format([config.origin for config in next_configs_by_acq_value]))
+        #print("Configs origins: {}".format([config.origin for config in next_configs_by_acq_value]))
 
         # Remove dummy acquisition function value
         # TODO Sometimes 2*(num_configs_local_search + num_configurations_by_random_search_sorted) != len(next_configs_by_acq_value)
