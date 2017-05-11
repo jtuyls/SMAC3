@@ -397,8 +397,8 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
             num_configurations_by_random_search_sorted: int = 1000,
             num_configurations_by_local_search: int = None,
             mrs=False):
-        #print("Run select configuration: rss: {}, ls: {}".format(num_configurations_by_random_search_sorted,
-        #                                                         num_configurations_by_local_search))
+        print("Run select configuration: rss: {}, ls: {}".format(num_configurations_by_random_search_sorted,
+                                                                num_configurations_by_local_search))
         """Choose next candidate solution with Bayesian optimization.
 
         Parameters
@@ -518,7 +518,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
 
 
         #### Compute preprocessor with highest marginalized EI ####
-        #print("Start marginalization computation")
+        print("Start marginalization computation")
         marginalization_start_time = time.time()
         # print(num_marginalized_configurations_by_random_search,
         #       num_configs_for_marginalization,
