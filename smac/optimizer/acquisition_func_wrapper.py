@@ -26,26 +26,26 @@ class PCAquisitionFunctionWrapper(object):
                                      for evaluation_config in evaluation_configs]
         marg_acq_values = [self.get_marginalized_acquisition_value(config=config, evaluation_configs_values=evaluation_configs_values) for config in configs]
         # print("MARG ACQUISITION VALUES: {}".format(marg_acq_values))
-        print("Compute marginalized acquisition values: {}".format(time.time() - start_time))
+        #print("Compute marginalized acquisition values: {}".format(time.time() - start_time))
 
         return np.array(marg_acq_values, dtype=np.float64)
 
     #### HELPER FUNCTIONS ####
     def get_marginalized_acquisition_value(self, config, evaluation_configs_values=None, num_points=100):
         start_time = time.time()
-        print(len(evaluation_configs_values))
+        #print(len(evaluation_configs_values))
         sample_configs = self._combine_configurations_batch_vector(config, evaluation_configs_values) if evaluation_configs_values \
             else [self._get_variant_config(start_config=config) for i in range(num_points)]
-        print("List construction: {}".format(time.time() - start_time))
+        #print("List construction: {}".format(time.time() - start_time))
 
         start_time = time.time()
         configs_array_ = convert_configurations_to_array(sample_configs)
-        print("Compute imputed configs: {}".format(time.time() - start_time))
+        #print("Compute imputed configs: {}".format(time.time() - start_time))
 
         #acq_values = self.acquisition_func(imputed_configs, caching_discounts)
         start_time = time.time()
         acq_values = self.acquisition_func(configs_array_)
-        print("Acquisition function evaluation: {}".format(time.time() - start_time))
+        #print("Acquisition function evaluation: {}".format(time.time() - start_time))
         return np.mean(acq_values)
 
     def _get_variant_config(self, start_config, origin=None):
@@ -135,21 +135,21 @@ class PCAquisitionFunctionWrapperWithCachingReduction(PCAquisitionFunctionWrappe
         sample_configs = self._combine_configurations_batch_vector(config,
                                                                 evaluation_configs_values) if evaluation_configs_values \
             else [self._get_variant_config(start_config=config) for i in range(0, num_points)]
-        print("List construction: {}".format(time.time() - start_time))
+        #print("List construction: {}".format(time.time() - start_time))
 
         start_time = time.time()
         caching_discounts = self._compute_caching_discounts(sample_configs,
                                                             self.runhistory.get_cached_configurations())
-        print("Compute caching discounts: {}".format(time.time() - start_time))
+        #print("Compute caching discounts: {}".format(time.time() - start_time))
 
         start_time = time.time()
         configs_array_ = convert_configurations_to_array(sample_configs)
-        print("Compute imputed configs: {}".format(time.time() - start_time))
+        #print("Compute imputed configs: {}".format(time.time() - start_time))
 
         # acq_values = self.acquisition_func(imputed_configs, caching_discounts)
         start_time = time.time()
         acq_values = self.acquisition_func(configs_array_, caching_discounts)
-        print("Acquisition function evaluation: {}".format(time.time() - start_time))
+        #print("Acquisition function evaluation: {}".format(time.time() - start_time))
         return np.mean(acq_values)
 
     def _compute_caching_discounts(self, configs, cached_configs):
@@ -161,8 +161,8 @@ class PCAquisitionFunctionWrapperWithCachingReduction(PCAquisitionFunctionWrappe
                 hash_value = hash(frozenset(cached_values.items()))
                 if hash_value in cached_configs:
                     discount += cached_configs[hash_value]
-                    print("CACHING REDUCTION: {}, {}".format(hash_value, discount))
-                    print("Config origin: {}".format(config.origin))
+                    #print("CACHING REDUCTION: {}, {}".format(hash_value, discount))
+                    #print("Config origin: {}".format(config.origin))
                     #print("Config: {}".format(config))
             runtime_discounts.append(discount)
         return runtime_discounts
