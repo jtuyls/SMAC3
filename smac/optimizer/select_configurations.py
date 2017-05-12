@@ -508,7 +508,8 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         }
         self.stats.add_select_configurations_run(run_info=info)
 
-        #return challengers
+        print("Stop select configurations: length: {}, length: {}".format(len(next_configs_by_acq_value),
+                                                                          len(next_configs_by_random_search)))
         return next_configs_by_acq_value, next_configs_by_random_search
 
     def _compute_configs_by_marginalization(self,
