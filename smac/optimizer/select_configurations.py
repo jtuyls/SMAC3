@@ -72,7 +72,7 @@ class SelectConfigurations(object):
         if X.shape[0] == 0:
             # Only return a single point to avoid an overly high number of
             # random search iterations
-            return [x[1] for x in self._get_next_by_random_search(num_points=1)]
+            return [x[1] for x in self._get_next_by_random_search(num_points=1)], [x[1] for x in self._get_next_by_random_search(num_points=1)]
 
         self.model.train(X, Y)
 
@@ -423,7 +423,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         if X.shape[0] == 0:
             # Only return a single point to avoid an overly high number of
             # random search iterations
-            return [x[1] for x in self._get_next_by_random_search(num_points=1)]
+            return [x[1] for x in self._get_next_by_random_search(num_points=1)], [x[1] for x in self._get_next_by_random_search(num_points=1)]
 
         self.model.train(X, Y)
 
