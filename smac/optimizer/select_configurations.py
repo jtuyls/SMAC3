@@ -140,6 +140,7 @@ class SelectConfigurations(object):
         else:
             challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
                                                     next_configs_by_random_search)))
+            print("Challenger list length: {}".format(len(challengers)))
             # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
             # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
             # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
