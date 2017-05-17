@@ -72,7 +72,12 @@ class SelectConfigurations(object):
         if X.shape[0] == 0:
             # Only return a single point to avoid an overly high number of
             # random search iterations
-            return [x[1] for x in self._get_next_by_random_search(num_points=1)], [x[1] for x in self._get_next_by_random_search(num_points=1)]
+            if double_intensification:
+                return [x[1] for x in self._get_next_by_random_search(num_points=1)], [x[1] for x in
+                                                                                       self._get_next_by_random_search(
+                                                                                           num_points=1)]
+            else:
+                return [x[1] for x in self._get_next_by_random_search(num_points=1)]
 
         self.model.train(X, Y)
 
@@ -134,18 +139,10 @@ class SelectConfigurations(object):
         self.stats.add_select_configurations_run(run_info=info)
 
         if double_intensification:
-            print("Stop select configurations: length: {}, length: {}".format(len(next_configs_by_acq_value),
-                                                                              len(next_configs_by_random_search)))
             return next_configs_by_acq_value, next_configs_by_random_search
         else:
             challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
                                                     next_configs_by_random_search)))
-            print("Challenger list length: {}".format(len(challengers)))
-            # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
-            # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
-            # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
-            #     iter_next_configs_by_random_search)
-            #                for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
             return challengers
 
     def _get_next_by_random_search(self, num_points=1000, _sorted=False):
@@ -424,7 +421,10 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         if X.shape[0] == 0:
             # Only return a single point to avoid an overly high number of
             # random search iterations
-            return [x[1] for x in self._get_next_by_random_search(num_points=1)], [x[1] for x in self._get_next_by_random_search(num_points=1)]
+            if double_intensification:
+                return [x[1] for x in self._get_next_by_random_search(num_points=1)], [x[1] for x in self._get_next_by_random_search(num_points=1)]
+            else:
+                return [x[1] for x in self._get_next_by_random_search(num_points=1)]
 
         self.model.train(X, Y)
 
@@ -502,11 +502,6 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         else:
             challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
                                                     next_configs_by_random_search)))
-            # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
-            # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
-            # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
-            #     iter_next_configs_by_random_search)
-            #                for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
             return challengers
 
 
