@@ -47,7 +47,7 @@ class SelectConfigurations(object):
             incumbent,
             num_configurations_by_random_search_sorted: int = 1000,
             num_configurations_by_local_search: int = None,
-            mrs=False):
+            double_intensification=False):
         """Choose next candidate solution with Bayesian optimization.
 
         Parameters
@@ -117,35 +117,35 @@ class SelectConfigurations(object):
         next_configs_by_acq_value = [_[1] for _ in next_configs_by_acq_value]
 
         # Remove dummy acquisition function value
-
-        batch_size = len(next_configs_by_acq_value) if mrs else 1
         next_configs_by_random_search = [x[1] for x in
                                          self._get_next_by_random_search_batch(
                                              num_points=len(next_configs_by_acq_value),
                                              #num_points=num_configs_local_search + num_configurations_by_random_search_sorted,
-                                             batch_size=batch_size)]
-
-        # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
-        #                                        next_configs_by_random_search)))
-        # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
-        # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
-        # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
-        #     iter_next_configs_by_random_search)
-        #                for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
+                                             batch_size=1)]
 
         info = {
             'walltime': time.time() - start_time,
             'num_configs_random_search_sorted': num_configurations_by_random_search_sorted,
             'num_configs_local_search': num_configurations_by_local_search,
-            'mrs': mrs,
+            'double_intensification': double_intensification,
             'marginalization info': {},
             '10 best configs': best_cofigs_by_acq_value
         }
         self.stats.add_select_configurations_run(run_info=info)
-        #return challengers
 
-        print("Stop select configurations: length: {}, length: {}".format(len(next_configs_by_acq_value), len(next_configs_by_random_search)))
-        return next_configs_by_acq_value, next_configs_by_random_search
+        if double_intensification:
+            print("Stop select configurations: length: {}, length: {}".format(len(next_configs_by_acq_value),
+                                                                              len(next_configs_by_random_search)))
+            return next_configs_by_acq_value, next_configs_by_random_search
+        else:
+            challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
+                                                    next_configs_by_random_search)))
+            # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
+            # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
+            # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
+            #     iter_next_configs_by_random_search)
+            #                for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
+            return challengers
 
     def _get_next_by_random_search(self, num_points=1000, _sorted=False):
         """Get candidate solutions via local search.
@@ -397,7 +397,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
             incumbent,
             num_configurations_by_random_search_sorted: int = 1000,
             num_configurations_by_local_search: int = None,
-            mrs=False):
+            double_intensification=False):
         print("Run select configuration: rss: {}, ls: {}".format(num_configurations_by_random_search_sorted,
                                                                 num_configurations_by_local_search))
         """Choose next candidate solution with Bayesian optimization.
@@ -481,36 +481,33 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
 
         # Remove dummy acquisition function value
         # TODO Sometimes 2*(num_configs_local_search + num_configurations_by_random_search_sorted) != len(next_configs_by_acq_value)
-        batch_size = len(next_configs_by_acq_value) if mrs else 1
         next_configs_by_random_search = [x[1] for x in
                                          self._get_next_by_random_search_batch(
                                              num_points=len(next_configs_by_acq_value),
-                                             #num_points=2*(num_configs_local_search + num_configurations_by_random_search_sorted),
-                                             batch_size=batch_size)]
-
-
-        #print("LENGTH: {}, {}".format(len(next_configs_by_acq_value), len(next_configs_by_random_search)))
-        # challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
-        #                                        next_configs_by_random_search)))
-        # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
-        # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
-        # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
-        #     iter_next_configs_by_random_search)
-        #                for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
+                                             batch_size=1)]
 
         info = {
             'walltime': time.time() - start_time,
             'num_configs_random_search_sorted': num_configurations_by_random_search_sorted,
             'num_configs_local_search': num_configurations_by_local_search,
-            'mrs': mrs,
+            'double_intensification': double_intensification,
             'marginalization info': marginalization_info,
             '10 best configs': best_configs_by_acq_value
         }
         self.stats.add_select_configurations_run(run_info=info)
 
-        print("Stop select configurations: length: {}, length: {}".format(len(next_configs_by_acq_value),
-                                                                          len(next_configs_by_random_search)))
-        return next_configs_by_acq_value, next_configs_by_random_search
+        if double_intensification:
+            return next_configs_by_acq_value, next_configs_by_random_search
+        else:
+            challengers = list(itertools.chain(*zip(next_configs_by_acq_value,
+                                                    next_configs_by_random_search)))
+            # iter_next_configs_by_acq_value = iter(next_configs_by_acq_value)
+            # iter_next_configs_by_random_search = iter(next_configs_by_random_search)
+            # challengers = [next(iter_next_configs_by_acq_value) if i % (random_leaf_size + 1) == 0 else next(
+            #     iter_next_configs_by_random_search)
+            #                for i in range(0, len(next_configs_by_acq_value) + len(next_configs_by_random_search))]
+            return challengers
+
 
     def _compute_configs_by_marginalization(self,
                                             num_marginalized_configurations_by_random_search=10,
