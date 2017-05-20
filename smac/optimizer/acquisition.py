@@ -230,6 +230,11 @@ class EIPS(EI):
                              'eta=<int>) to inform the acquisition function '
                              'about the current best value.')
 
+        # TODO test
+        for i in range(len(m_runtime)):
+            m_runtime[i] = np.exp(m_runtime[i]) - 1
+
+
         z = (self.eta - m_cost - self.par) / s
         f = (self.eta - m_cost - self.par) * norm.cdf(z) + s * norm.pdf(z)
         f = f / m_runtime
@@ -314,9 +319,13 @@ class PCEIPS(EIPS):
                 # runhistory2epm4eips returns 'np.log(1 + run.time)'as runtime cost
                 #if np.exp(m_runtime[i]) - runtime_discount[i] < 1:
                 #    print(np.exp(m_runtime[i]), runtime_discount[i])
+                # m_runtime[i] = \
+                #     np.log(np.exp(m_runtime[i]) - runtime_discount[i]) if np.exp(m_runtime[i]) - runtime_discount[
+                #         i] > 1 else m_runtime[i]
+                # TODO
                 m_runtime[i] = \
-                    np.log(np.exp(m_runtime[i]) - runtime_discount[i]) if np.exp(m_runtime[i]) - runtime_discount[
-                        i] > 1 else m_runtime[i]
+                    np.exp(m_runtime[i]) - 1 - runtime_discount[i] if np.exp(m_runtime[i]) - runtime_discount[
+                        i] > 1 else np.exp(m_runtime[i]) - 1
 
                 # print("M RUNTIME AFTER: {}".format(m_runtime))
 
