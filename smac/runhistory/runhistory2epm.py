@@ -413,7 +413,7 @@ class RunHistory2EPM4EIPS(AbstractRunHistory2EPM):
             else:
                 X[row, :] = conf_vector
             # run_array[row, -1] = instances[row]
-            Y[row, 0] = run.cost
+            Y[row, 0] = np.log(run.cost) if run.cost > 1e-8 else np.log(1e-8)
             Y[row, 1] = np.log(1 + run.time)
 
         return X, Y
