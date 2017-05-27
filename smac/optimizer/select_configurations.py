@@ -669,3 +669,17 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
         return [(acq_values[ind], configs[ind])
                 for ind in indices[::-1]]
 
+
+
+class SelectConfigurationsRandom(SelectConfigurations):
+
+    def __init__(self, scenario: Scenario):
+        self.logger = logging.getLogger("Select Configuration random")
+        self.config_space = scenario.cs
+
+    def run(self, X, Y,
+            incumbent,
+            num_configurations_by_random_search_sorted: int = 1000,
+            num_configurations_by_local_search: int = None,
+            double_intensification=False):
+        return [self.config_space.sample_configuration(size=1)]
