@@ -683,3 +683,93 @@ class SelectConfigurationsRandom(SelectConfigurations):
             num_configurations_by_local_search: int = None,
             double_intensification=False):
         return [self.config_space.sample_configuration(size=1)]
+
+
+
+class SelectConfigurationsMRS(SelectConfigurations):
+
+    def __init__(self, scenario: Scenario, constant_pipeline_steps, variable_pipeline_steps,
+                 splitting_number, random_splitting_enabled=False):
+        self.logger = logging.getLogger("Select Configuration random")
+        self.config_space = scenario.cs
+        self.splitting_number = splitting_number
+        self.random_splitting_enabled = random_splitting_enabled
+        self.constant_pipeline_steps = constant_pipeline_steps
+        self.variable_pipeline_steps = variable_pipeline_steps
+        self.challenger_list = []
+        print("Selectconfiguration MRS: {}, {}, {}, {}".format(constant_pipeline_steps, variable_pipeline_steps,
+                                                               splitting_number, random_splitting_enabled))
+
+    def run(self, X, Y,
+            incumbent,
+            num_configurations_by_random_search_sorted: int = 1000,
+            num_configurations_by_local_search: int = None,
+            double_intensification=False):
+
+        if self.challenger_list == []:
+            self.challenger_list = self.sample_batch_of_configurations()
+
+        return [self.challenger_list.pop()]
+
+    def sample_batch_of_configurations(self):
+        start_config = self.config_space.sample_configuration()
+        batch_of_configs = [start_config]
+
+        if self.random_splitting_enabled:
+            batch_size = np.random.randint(1, self.splitting_number)
+        else:
+            batch_size = self.splitting_number
+
+        while len(batch_of_configs) < batch_size:
+            next_config = self.config_space.sample_configuration()
+            complemented_vector_values = self._get_vector_values(next_config, self.variable_pipeline_steps)
+            # TODO hack for now to combine preprocessing part of one configuration with classification part of all the others
+            next_config_combined = self._combine_configurations_batch_vector(start_config, [complemented_vector_values])
+            batch_of_configs.extend(next_config_combined)
+        return batch_of_configs
+
+    def _combine_configurations_batch_vector(self, start_config, complemented_configs_values):
+        constant_vector_values = self._get_vector_values(start_config, self.constant_pipeline_steps)
+        batch = []
+
+        for complemented_config_values in complemented_configs_values:
+            vector = np.ndarray(len(self.config_space._hyperparameters),
+                                dtype=np.float)
+
+            vector[:] = np.NaN
+
+            for key in constant_vector_values:
+                vector[key] = constant_vector_values[key]
+
+            for key in complemented_config_values:
+                vector[key] = complemented_config_values[key]
+
+            try:
+                self.config_space._check_forbidden(vector)
+                config_object = Configuration(configuration_space=self.config_space,
+                                              vector=vector)
+                batch.append(config_object)
+            except ValueError as v:
+                pass
+
+        return batch
+
+    def _get_values(self, config_dict, pipeline_steps):
+        value_dict = {}
+        for step_name in pipeline_steps:
+            for hp_name in config_dict:
+                splt_hp_name = hp_name.split(":")
+                if splt_hp_name[0] == step_name:
+                    value_dict[hp_name] = config_dict[hp_name]
+        return value_dict
+
+    def _get_vector_values(self, config, pipeline_steps):
+        vector = config.get_array()
+        value_dict = {}
+        for hp_name in config.get_dictionary():
+            for step_name in pipeline_steps:
+                splt_hp_name = hp_name.split(":")
+                if splt_hp_name[0] == step_name:
+                    item_idx = self.config_space._hyperparameter_idx[hp_name]
+                    value_dict[item_idx] = vector[item_idx]
+        return value_dict
