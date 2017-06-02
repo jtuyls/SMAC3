@@ -787,6 +787,7 @@ class SelectConfigurationsSigmoidRS(SelectConfigurations):
         self.incumbent_timing= 0
         self.random_timing = 0
 
+
     def run(self, X, Y,
             incumbent,
             timing_previous_run,
@@ -801,6 +802,8 @@ class SelectConfigurationsSigmoidRS(SelectConfigurations):
 
         if not (incumbent in self.incumbent_lst):
             self.incumbent_lst.append(incumbent)
+            self.random_timing = 0
+            self.incumbent_timing = 0
 
         if self.previous_config == "incumbent":
             self.incumbent_timing += timing_previous_run
@@ -822,7 +825,7 @@ class SelectConfigurationsSigmoidRS(SelectConfigurations):
         else:
             challenger = self.config_space.sample_configuration()
             self.previous_config = "random"
-        
+
         return [challenger]
 
     def _combine_configurations_batch_vector(self, start_config, complemented_configs_values):
