@@ -513,7 +513,7 @@ class SelectConfigurationsWithMarginalization(SelectConfigurations):
 
 
         #### Compute preprocessor with highest marginalized EI ####
-        print("Start marginalization computation")
+        #print("Start marginalization computation")
         marginalization_start_time = time.time()
         # print(num_marginalized_configurations_by_random_search,
         #       num_configs_for_marginalization,
