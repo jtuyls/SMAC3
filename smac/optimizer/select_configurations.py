@@ -8,9 +8,9 @@ import time
 
 import numpy as np
 
-from smac.smbo.acquisition import AbstractAcquisitionFunction
+from smac.optimizer.acquisition import AbstractAcquisitionFunction
 from smac.epm.rf_with_instances import RandomForestWithInstances
-from smac.smbo.local_search import LocalSearch
+from smac.optimizer.local_search import LocalSearch
 from smac.scenario.scenario import Scenario
 from smac.runhistory.runhistory import RunHistory
 from smac.stats.stats import Stats
